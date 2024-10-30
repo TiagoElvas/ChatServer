@@ -19,9 +19,11 @@ public class Client {
         String hostName = "localhost";
         int portNumber = 8085;
 
+        //CONNECTION ESTABLISHED
         try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
-            clientSocket = new Socket(hostName, portNumber);//CONNECTION ESTABLISHED
+            clientSocket = new Socket(hostName, portNumber);
 
+            //STREAMS
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
@@ -30,17 +32,15 @@ public class Client {
             ExecutorService readMessages = Executors.newSingleThreadExecutor();
             readMessages.submit(new Listen());
 
-
-            /*This will be inside a loop. But before entering the loop,I need to
-            create a new Thread to listen and print, which is above. */
+            /*AFTER DE MAIN THREAD CREATE ANOTHER, IT WILL ENTER ITS OWN LOOP TO KEEP LISTENING MESSAGES FROM TERMINAL*/
             while (true) {
-                String message = br.readLine();
-                out.println(message);
-                if (message.equals("/Exit")) {
+                String message = br.readLine(); //READ THE MESSAGE THAT IS TYPED ON THE TERMINAL
+                out.println(message); //PRINT THE MESSAGE
+                if (message.equals("/Exit")) { //IF CLIENT TYPES /EXIT, THE CONNECTION CLOSES.
                     clientSocket.close();
                 }
-            }
 
+            }
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -48,26 +48,29 @@ public class Client {
 
     private class Listen implements Runnable {
 
+        //THE NEW THREAD WILL LISTEN TO ANY MESSAGES FROM THE SERVER
+
+        private String messageFromServer = "";
         @Override
         public void run() {
             try {
-                String messageFromServer = in.readLine();
-                System.out.println(messageFromServer);
 
-                while (!clientSocket.isClosed() || messageFromServer != null) {
-                    messageFromServer = in.readLine();
-                    System.out.println(messageFromServer);
+
+                System.out.println("Enter your name please (type /name before entering your name)");
+                while (!clientSocket.isClosed()) { //WHILE THE CONNECTION ISN'T CLOSED, KEEP LISTENING.
+                    messageFromServer = in.readLine(); //READ THE LINE;
+                    if (messageFromServer != null) { //THIS PREVENTS FROM APPEARS ONE LAST TIME NULL AFTER CLOSE THE SERVER
+                        System.out.println(messageFromServer);
+                    } else {
+                        System.out.println("The server went down.");
+                        System.exit(0);
+                    }
                 }
 
             } catch (IOException e) {
                 System.out.println("There's no messages to read.");
-            } finally{
-                try {
-                    clientSocket.close();
-                } catch (IOException e) {
-
-                }
+            }
             }
         }
     }
-}
+
