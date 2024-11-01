@@ -1,6 +1,6 @@
 package org.codeforall.io;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
+//import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,10 +8,11 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+
 public class ServerWorker implements Runnable {
 
-    private  Socket clientSocket;
-    private Server server;
+    private final Socket clientSocket;
+    private final Server server;
     private String nameClient = "";
     private PrintWriter out;
     private BufferedReader in;
@@ -34,21 +35,32 @@ public class ServerWorker implements Runnable {
             String messageFromClient = in.readLine();
             System.out.println(messageFromClient);
 
-            while (!messageFromClient.equals("/Exit")) { //IF CLIENT TYPES /EXIT E EXIT FROM THE CHAT.
+            //IF CLIENT TYPES /EXIT E EXIT FROM THE CHAT.
+          /*  while (!messageFromClient.equals("/Exit")) {
 
-                if (messageFromClient.startsWith("/name")) { //CLIENT NEED TO PUT IS NAME FIRST.
+                //CLIENT NEED TO PUT IS NAME FIRST.
+                if (messageFromClient.startsWith("/name")) {
                     String name[] = messageFromClient.split(" ");
                     if (name.length > 1) {
                         nameClient = name[1];
                     }
+                    // getMessage(messageFromClient);
 
                 } else {
                     String msg = nameClient + ": " + messageFromClient;
                     server.sendToAll(msg);
 
                 }
-                    messageFromClient = in.readLine();
-                    System.out.println(nameClient + ": " + messageFromClient);
+                messageFromClient = in.readLine();
+                System.out.println(nameClient + ": " + messageFromClient);
+            }
+
+           */
+
+            while(messageFromClient != null){
+                getMessage(messageFromClient);
+                messageFromClient = in.readLine();
+                System.out.println(messageFromClient);
             }
             clientSocket.close();
 
@@ -61,5 +73,27 @@ public class ServerWorker implements Runnable {
         out.println(message);
     }
 
+    public void getMessage(String message) {
+        if (message.startsWith("/name")) {
+
+            String[] name = message.split(" ");
+            if (name.length > 1) {
+                nameClient = name[1];
+                server.sendToAll("Name set to " + nameClient);
+            } else {
+                server.sendToAll("Invalid command type. Use: /name [your_name]");
+            }
+
+            if (message.equals("/Exit")) {
+
+                try {
+                    server.sendToAll(nameClient + "exiting the server. Goodbye!");
+                    clientSocket.close();
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+        }
+    }
 }
 

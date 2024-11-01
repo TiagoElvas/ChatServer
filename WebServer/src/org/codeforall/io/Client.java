@@ -34,9 +34,15 @@ public class Client {
 
             /*AFTER DE MAIN THREAD CREATE ANOTHER, IT WILL ENTER ITS OWN LOOP TO KEEP LISTENING MESSAGES FROM TERMINAL*/
             while (true) {
-                String message = br.readLine(); //READ THE MESSAGE THAT IS TYPED ON THE TERMINAL
-                out.println(message); //PRINT THE MESSAGE
-                if (message.equals("/Exit")) { //IF CLIENT TYPES /EXIT, THE CONNECTION CLOSES.
+
+                //READ THE MESSAGE THAT IS TYPED ON THE TERMINAL
+                String message = br.readLine();
+
+                //PRINT THE MESSAGE
+                out.println(message);
+
+                //IF CLIENT TYPES /EXIT, THE CONNECTION CLOSES.
+                if (message.equals("/Exit")) {
                     clientSocket.close();
                 }
 
@@ -57,9 +63,17 @@ public class Client {
 
 
                 System.out.println("Enter your name please (type /name before entering your name)");
-                while (!clientSocket.isClosed()) { //WHILE THE CONNECTION ISN'T CLOSED, KEEP LISTENING.
-                    messageFromServer = in.readLine(); //READ THE LINE;
-                    if (messageFromServer != null) { //THIS PREVENTS FROM APPEARS ONE LAST TIME NULL AFTER CLOSE THE SERVER
+
+
+
+                //WHILE THE CONNECTION ISN'T CLOSED, KEEP LISTENING.
+                while (!clientSocket.isClosed()) {
+
+                    //READ THE LINE;
+                    messageFromServer = in.readLine();
+
+                    //THIS PREVENTS FROM APPEARS ONE LAST TIME NULL AFTER CLOSE THE SERVER
+                    if (messageFromServer != null) {
                         System.out.println(messageFromServer);
                     } else {
                         System.out.println("The server went down.");
