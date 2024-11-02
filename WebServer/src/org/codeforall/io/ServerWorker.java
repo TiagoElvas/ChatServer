@@ -17,6 +17,7 @@ public class ServerWorker implements Runnable {
     private boolean isNameSet = false;
     private final PrintWriter out;
     private final BufferedReader in;
+    private String color;
 
     public ServerWorker(Socket clientSocket, Server server) throws IOException {
         this.clientSocket = clientSocket;
@@ -72,35 +73,65 @@ public class ServerWorker implements Runnable {
             return;
         }
 
-            if (!isNameSet) {
-                if (message.startsWith("/name")) {
-                    String[] name = message.split(" ", 2);
-                    if (name.length > 1) {
-                        this.name = name[1];
-                        isNameSet = true;
-                        send(showOptions());
-                        server.sendToAll("Welcome " + name + " to the chat!");
-                    } else {
-                        server.sendToAll("name format incorrect. Use /name [your_name]");
-                    }
-                } else {
-                    send("Please insert your name first to use the chat");
-                }
 
-            } else {
-                if (message.startsWith("/name")) {
-                    send("You already set your name");
+        if (!isNameSet) {
+            if (message.startsWith("/name")) {
+                String[] name = message.split(" ", 2);
+                if (name.length > 1) {
+                    this.name = name[1];
+                    isNameSet = true;
+                    send(showOptions());
+                    server.sendToAll("Welcome " + name + " to the chat!");
                 } else {
-                    String msg = name + ": " + message;
-                    server.sendToAll(msg);
-                    System.out.println(msg);
+                    server.sendToAll("name format incorrect. Use /name [your_name]");
                 }
+            } else {
+                send("Please insert your name first to use the chat");
             }
 
+        } else {
+            if (message.startsWith("/name")) {
+                send("You already set your name");
+            } else {
+                String msg = name + ": " + message;
+                server.sendToAll(msg);
+                System.out.println(msg);
+            }
         }
 
+
+        if(message.startsWith("/joke")){
+            String[] jokes = {
+                    "How do ghosts stay in shape? They exorcise.",
+                    "Did you get a haircut? No, I got them all cut.",
+                    "What do you call a fish without eyes? A fsh.",
+                    "Whoever stole my depression medication — I hope you're happy now"
+            };
+            int random = (int)Math.floor(Math.random() * 4);
+            server.sendToAll(jokes[random]);
+        }
+
+
+        /*if(message.startsWith("/ctext_" + color));
+        switch (color){
+            case "red":
+                color = "\u001B[31m";
+                break;
+            case "blue":
+                color = "\u001B[34m";
+                break;
+            default:
+                color = "\u001B[0m";
+        }
+        
+         */
+    }
+
     public String showOptions() {
-        return "Choose between this list of options and have fun: \n Type '/joke' for random jokes! \n Type '/ctext_red/white/blue/purple' for changing the color of your text! \n Type '/Exit' for exiting the chat";
+        return "Choose between this list of options and have fun: \n" +
+                "Type '/joke' for random jokes! \n" +
+                "Type '/ctext_red/white/blue/purple' for changing the color of your text! \n" +
+                "Type '/Exit' for exiting the chat";
 
     }
 }
