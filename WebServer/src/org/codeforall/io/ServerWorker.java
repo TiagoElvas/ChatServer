@@ -13,87 +13,96 @@ public class ServerWorker implements Runnable {
 
     private final Socket clientSocket;
     private final Server server;
-    private String nameClient = "";
-    private PrintWriter out;
-    private BufferedReader in;
+    private String name = "";
+    private boolean isNameSet = false;
+    private final PrintWriter out;
+    private final BufferedReader in;
 
-    public ServerWorker(Socket clientSocket, Server server) {
+    public ServerWorker(Socket clientSocket, Server server) throws IOException {
         this.clientSocket = clientSocket;
         this.server = server;
+            /*
+            InputStreamReader inputStream = new InputStreamReader(clientSocket.getInputStream());
+            in = new BufferedReader(inputStream);
+            */
+        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        out = new PrintWriter(clientSocket.getOutputStream(), true);
     }
+
 
     @Override
     public void run() {
+
         try {
-            /*
-            InputStreamReader inputStreamReader = new InputStreamReader(clientSocket.getInputStream());
-            in = new BufferedReader(inputStreamReader);
-            */
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-            String messageFromClient = in.readLine();
-            System.out.println(messageFromClient);
-
-            //IF CLIENT TYPES /EXIT E EXIT FROM THE CHAT.
-          /*  while (!messageFromClient.equals("/Exit")) {
-
-                //CLIENT NEED TO PUT IS NAME FIRST.
-                if (messageFromClient.startsWith("/name")) {
-                    String name[] = messageFromClient.split(" ");
-                    if (name.length > 1) {
-                        nameClient = name[1];
-                    }
-                    // getMessage(messageFromClient);
-
-                } else {
-                    String msg = nameClient + ": " + messageFromClient;
-                    server.sendToAll(msg);
-
-                }
-                messageFromClient = in.readLine();
-                System.out.println(nameClient + ": " + messageFromClient);
-            }
-
-           */
-
-            while(messageFromClient != null){
+            while (!clientSocket.isClosed()) {
+                String messageFromClient = in.readLine();
                 getMessage(messageFromClient);
-                messageFromClient = in.readLine();
-                System.out.println(messageFromClient);
+
+                if (messageFromClient == null) {
+                    System.out.println("Client " + name + " closed, exiting...");
+                }
             }
             clientSocket.close();
+            server.removeWorker(this);
 
         } catch (IOException e) {
             System.out.println("You're not receiving any messages.");
         }
+
     }
 
+
+    //This returns the message to himself - see line 66 and 70 to understand the difference.
     public void send(String message) {
         out.println(message);
     }
 
+    //This method handles all types (/...).
     public void getMessage(String message) {
-        if (message.startsWith("/name")) {
 
-            String[] name = message.split(" ");
-            if (name.length > 1) {
-                nameClient = name[1];
-                server.sendToAll("Name set to " + nameClient);
-            } else {
-                server.sendToAll("Invalid command type. Use: /name [your_name]");
+        if (message.startsWith("/Exit")) {
+            try {
+                server.sendToAll(name + " left the chat"); // sends to all clients that this client left the chat
+                System.out.println(name + " left the chat"); //prints on the server which client left the chat
+                clientSocket.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
+            return;
+        }
 
-            if (message.equals("/Exit")) {
+            if (!isNameSet) {
+                if (message.startsWith("/name")) {
+                    String[] name = message.split(" ", 2);
+                    if (name.length > 1) {
+                        this.name = name[1];
+                        isNameSet = true;
+                        send(showOptions());
+                        server.sendToAll("Welcome " + name + " to the chat!");
+                    } else {
+                        server.sendToAll("name format incorrect. Use /name [your_name]");
+                    }
+                } else {
+                    send("Please insert your name first to use the chat");
+                }
 
-                try {
-                    server.sendToAll(nameClient + "exiting the server. Goodbye!");
-                    clientSocket.close();
-                } catch (IOException e) {
-                    System.out.println(e.getMessage());
+            } else {
+                if (message.startsWith("/name")) {
+                    send("You already set your name");
+                } else {
+                    String msg = name + ": " + message;
+                    server.sendToAll(msg);
+                    System.out.println(msg);
                 }
             }
+
         }
+
+    public String showOptions() {
+        return "Choose between this list of options and have fun: \n Type '/joke' for random jokes! \n Type '/ctext_red/white/blue/purple' for changing the color of your text! \n Type '/Exit' for exiting the chat";
+
     }
 }
+
 

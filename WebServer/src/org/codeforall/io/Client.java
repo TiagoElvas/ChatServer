@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 
 public class Client {
 
-    private PrintWriter out;
     private BufferedReader in;
     private Socket clientSocket;
 
@@ -19,12 +18,12 @@ public class Client {
         String hostName = "localhost";
         int portNumber = 8085;
 
-        //CONNECTION ESTABLISHED
         try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+            //CONNECTION ESTABLISHED
             clientSocket = new Socket(hostName, portNumber);
 
             //STREAMS
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
 
@@ -56,21 +55,16 @@ public class Client {
 
         //THE NEW THREAD WILL LISTEN TO ANY MESSAGES FROM THE SERVER
 
-        private String messageFromServer = "";
         @Override
         public void run() {
             try {
-
-
                 System.out.println("Enter your name please (type /name before entering your name)");
-
-
 
                 //WHILE THE CONNECTION ISN'T CLOSED, KEEP LISTENING.
                 while (!clientSocket.isClosed()) {
 
                     //READ THE LINE;
-                    messageFromServer = in.readLine();
+                    String messageFromServer = in.readLine();
 
                     //THIS PREVENTS FROM APPEARS ONE LAST TIME NULL AFTER CLOSE THE SERVER
                     if (messageFromServer != null) {
@@ -82,9 +76,9 @@ public class Client {
                 }
 
             } catch (IOException e) {
-                System.out.println("There's no messages to read.");
-            }
+                System.out.println("You left the chat");
             }
         }
     }
+}
 
