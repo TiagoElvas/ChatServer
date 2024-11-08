@@ -58,11 +58,3 @@ public class Server {
 
 }
 
-//Criar um método que lista todos os clients dentro do chat. usa synchronized enquanto estou a iterar não quero que adiciones
-//ou retires pessoas ao chat.
-
-//Dar cores das letras a cada usuário.
-
-//permitir trocar imagens ou gifts
-
-//fazer thread safety. Usar uma lista Collections.synchronizedList

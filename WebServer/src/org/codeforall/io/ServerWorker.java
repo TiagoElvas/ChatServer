@@ -22,10 +22,7 @@ public class ServerWorker implements Runnable {
     public ServerWorker(Socket clientSocket, Server server) throws IOException {
         this.clientSocket = clientSocket;
         this.server = server;
-            /*
-            InputStreamReader inputStream = new InputStreamReader(clientSocket.getInputStream());
-            in = new BufferedReader(inputStream);
-            */
+
         in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         out = new PrintWriter(clientSocket.getOutputStream(), true);
     }
@@ -111,26 +108,11 @@ public class ServerWorker implements Runnable {
             server.sendToAll(jokes[random]);
         }
 
-
-        /*if(message.startsWith("/ctext_" + color));
-        switch (color){
-            case "red":
-                color = "\u001B[31m";
-                break;
-            case "blue":
-                color = "\u001B[34m";
-                break;
-            default:
-                color = "\u001B[0m";
-        }
-        
-         */
     }
 
     public String showOptions() {
         return "Choose between this list of options and have fun: \n" +
                 "Type '/joke' for random jokes! \n" +
-                "Type '/ctext_red/white/blue/purple' for changing the color of your text! \n" +
                 "Type '/Exit' for exiting the chat";
 
     }
